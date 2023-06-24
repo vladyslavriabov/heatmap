@@ -40,6 +40,7 @@ export default function Map() {
       : "#FFEDA0";
   }
   function onEachFeature(feature, layer) {
+    layer.bindPopup("<h3>hello</h3>");
     layer.on({
       mouseover: (e) => {
         e.target.setStyle({
