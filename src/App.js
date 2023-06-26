@@ -47,7 +47,6 @@ function App() {
     );
     setSelectedFeature(feature);
   }, [selectedFeatureId]);
-
   const handleLevelChange = (event, newLevel) => {
     if (!newLevel) return;
     setSelectedFeatureId(null);
@@ -86,7 +85,6 @@ function App() {
         return result;
       }, {});
       setData(updatedData);
-      console.log(updatedData);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -95,83 +93,91 @@ function App() {
     height: "50px",
     width: "200px",
   };
-
   return (
-    <div className="App">
-      <Grid container direction="row" sx={{ height: "100%", width: "100%" }}>
-        <Grid
-          container
-          item
-          direction="column"
-          justifyContent="center"
-          alignItems="stretch"
-          xs={4}
-        >
+    <>
+      {!data[level].data ? (
+        <div>
+          <b>Loading ...</b>
+        </div>
+      ) : (
+        <div className="App">
           <Grid
-            item
-            xs={3}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              flexDirection: "column",
-              justifyContent: "center",
-            }}
+            container
+            direction="row"
+            sx={{ height: "100%", width: "100%" }}
           >
-            <h2>Level of Administrative Divisions</h2>
-            <ToggleButtonGroup
-              color="primary"
-              orientation="vertical"
-              value={level}
-              exclusive
-              onChange={handleLevelChange}
+            <Grid
+              container
+              item
+              direction="column"
+              justifyContent="center"
+              alignItems="stretch"
+              xs={4}
             >
-              <ToggleButton value="level1" style={ButtonStyle}>
-                Level 1
-              </ToggleButton>
-              <ToggleButton value="level2" style={ButtonStyle}>
-                Level 2
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Grid>
-          <Grid item xs={9}>
-            <h2>Administrative Divisions</h2>
-            <ToggleButtonGroup
-              color="primary"
-              orientation="vertical"
-              value={selectedFeatureId}
-              exclusive
-              onChange={handleButtonClick}
-              style={{ maxHeight: "500px", overflow: "auto" }}
-            >
-              {data[level].data &&
-                data[level].data.map((feature) => (
-                  <ToggleButton
-                    key={feature.id}
-                    value={feature.id}
-                    style={ButtonStyle}
-                  >
-                    {feature.name}
+              <Grid
+                item
+                xs={3}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                }}
+              >
+                <h2>Level of Administrative Divisions</h2>
+                <ToggleButtonGroup
+                  color="primary"
+                  orientation="vertical"
+                  value={level}
+                  exclusive
+                  onChange={handleLevelChange}
+                >
+                  <ToggleButton value="level1" style={ButtonStyle}>
+                    Level 1
                   </ToggleButton>
-                ))}
-            </ToggleButtonGroup>
+                  <ToggleButton value="level2" style={ButtonStyle}>
+                    Level 2
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Grid>
+              <Grid item xs={9}>
+                <h2>Administrative Divisions</h2>
+                <ToggleButtonGroup
+                  color="primary"
+                  orientation="vertical"
+                  value={selectedFeatureId}
+                  exclusive
+                  onChange={handleButtonClick}
+                  style={{ maxHeight: "500px", overflow: "auto" }}
+                >
+                  {data[level].data.map((feature) => (
+                    <ToggleButton
+                      key={feature.id}
+                      value={feature.id}
+                      style={ButtonStyle}
+                    >
+                      {feature.name}
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+              </Grid>
+            </Grid>
+            <Grid item xs={8} style={{ position: "relative" }}>
+              {selectedFeature && <Tooltip data={selectedFeature} />}
+              <Map
+                geoData={data[level].data}
+                selectedFeature={selectedFeature}
+                setSelectedFeatureId={setSelectedFeatureId}
+                level={level}
+                setLevel={setLevel}
+                getColor={getColor}
+              />
+              <Legend getColor={getColor} />
+            </Grid>
           </Grid>
-        </Grid>
-        <Grid item xs={8} style={{ position: "relative" }}>
-          {selectedFeature && <Tooltip data={selectedFeature} />}
-          {data[level].data && (
-            <Map
-              geoData={data[level].data}
-              selectedFeature={selectedFeature}
-              setSelectedFeatureId={setSelectedFeatureId}
-              level={level}
-              setLevel={setLevel}
-              getColor={getColor}
-            />
-          )}
-          <Legend getColor={getColor} />
-        </Grid>
-      </Grid>
-    </div>
+        </div>
+      )}
+    </>
   );
 }
 
