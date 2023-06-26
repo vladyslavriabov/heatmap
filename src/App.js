@@ -1,8 +1,23 @@
 import "./App.css";
 import React, { useState, useEffect } from "react";
 import Map from "./components/Map/Map";
-import Grid from "@mui/material/Grid";
-import { ToggleButtonGroup, ToggleButton } from "@mui/material";
+import Tooltip from "./components/Tooltip/Tooltip";
+import { Grid, ToggleButtonGroup, ToggleButton } from "@mui/material";
+import Legend from "./components/Legend/Legend";
+
+function getColor(d) {
+  return d > 100
+    ? "#005824"
+    : d > 80
+    ? "#238b45"
+    : d > 60
+    ? "#41ae76"
+    : d > 40
+    ? "#66c2a4"
+    : d > 20
+    ? "#99d8c9"
+    : "#ccece6";
+}
 function App() {
   const [data, setData] = useState({
     level1: {
@@ -17,16 +32,31 @@ function App() {
     },
   });
   const [selectedFeatureId, setSelectedFeatureId] = useState(null);
+  const [selectedFeature, setSelectedFeature] = useState(null);
   const [level, setLevel] = useState("level1");
   useEffect(() => {
-    setSelectedFeatureId(null);
-  }, [level]);
+    fetchData();
+  }, []);
+  useEffect(() => {
+    if (!selectedFeatureId) {
+      setSelectedFeature(null);
+      return;
+    }
+    const feature = data[level].data.find(
+      (item) => item.id === selectedFeatureId
+    );
+    setSelectedFeature(feature);
+  }, [selectedFeatureId]);
+
   const handleLevelChange = (event, newLevel) => {
     if (!newLevel) return;
     setSelectedFeatureId(null);
     setLevel(newLevel);
   };
-
+  const handleButtonClick = (event, featureId) => {
+    if (!featureId) return;
+    setSelectedFeatureId(featureId);
+  };
   const fetchData = async () => {
     try {
       const requests = Object.values(data).map((lvl) =>
@@ -61,20 +91,11 @@ function App() {
       console.error("Error fetching data:", error);
     }
   };
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const handleButtonClick = (event, featureId) => {
-    if (!featureId) return;
-    console.log(featureId);
-
-    setSelectedFeatureId(featureId);
-  };
   const ButtonStyle = {
     height: "50px",
     width: "200px",
   };
+
   return (
     <div className="App">
       <Grid container direction="row" sx={{ height: "100%", width: "100%" }}>
@@ -120,7 +141,7 @@ function App() {
               value={selectedFeatureId}
               exclusive
               onChange={handleButtonClick}
-              style={{ maxHeight: "600px", overflow: "auto" }}
+              style={{ maxHeight: "500px", overflow: "auto" }}
             >
               {data[level].data &&
                 data[level].data.map((feature) => (
@@ -135,16 +156,19 @@ function App() {
             </ToggleButtonGroup>
           </Grid>
         </Grid>
-        <Grid item xs={8}>
+        <Grid item xs={8} style={{ position: "relative" }}>
+          {selectedFeature && <Tooltip data={selectedFeature} />}
           {data[level].data && (
             <Map
               geoData={data[level].data}
-              selectedFeatureId={selectedFeatureId}
+              selectedFeature={selectedFeature}
               setSelectedFeatureId={setSelectedFeatureId}
               level={level}
               setLevel={setLevel}
+              getColor={getColor}
             />
           )}
+          <Legend getColor={getColor} />
         </Grid>
       </Grid>
     </div>

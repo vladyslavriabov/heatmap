@@ -1,13 +1,14 @@
 import React, { useEffect } from "react";
-import style from "./Map.module.css";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, GeoJSON, useMap } from "react-leaflet";
+
 export default function Map({
   geoData,
   level,
   setLevel,
-  selectedFeatureId,
+  selectedFeature,
   setSelectedFeatureId,
+  getColor,
 }) {
   const maxZoom = level === "level1" ? 7 : null;
   const minZoom = level === "level2" ? 8 : 1;
@@ -28,30 +29,19 @@ export default function Map({
     });
 
     useEffect(() => {
-      if (selectedFeatureId) {
-        const { bbox } = geoData.find((item) => item.id === selectedFeatureId);
+      if (selectedFeature) {
+        const { bbox } = selectedFeature;
         const bounds = [
           [bbox[3], bbox[2]],
           [bbox[1], bbox[0]],
         ];
         map.fitBounds(bounds, { maxZoom: maxZoom, minZoom: minZoom });
       }
-    }, [selectedFeatureId]);
+    }, [selectedFeature]);
 
     return null;
   };
 
-  function getColor(d) {
-    return d > 100
-      ? "#FC4E2A"
-      : d > 50
-      ? "#FD8D3C"
-      : d > 20
-      ? "#FEB24C"
-      : d > 10
-      ? "#FED976"
-      : "#FFEDA0";
-  }
   const handleClick = (event) => {
     const layer = event.target;
     setSelectedFeatureId(layer.feature.id);
@@ -62,17 +52,17 @@ export default function Map({
     }
   };
   function onEachFeature(feature, layer) {
-    layer.bindPopup("<h3>hello</h3>");
     layer.on({
       mouseover: (e) => {
         e.target.setStyle({
-          fillOpacity: 0.1,
+          fillOpacity: 1,
+          color: "gray",
         });
       },
       mouseout: (e) => {
         e.target.setStyle({
-          // dashArray: "3",
           fillOpacity: 0.7,
+          color: "white",
         });
       },
       click: (e) => handleClick(e),
@@ -83,7 +73,11 @@ export default function Map({
     <>
       {geoData && (
         <MapContainer
-          className={style.containter}
+          style={{
+            width: "100%",
+            height: "100%",
+            zIndex: "0",
+          }}
           zoom={6}
           minZoom={1}
           center={[53.89875435070986, -3.8841696195669964]}
@@ -96,8 +90,9 @@ export default function Map({
             key={level}
             data={geoData}
             style={(location) => {
+              console.log(location.density);
               let fillColor =
-                selectedFeatureId === location.id
+                selectedFeature?.id === location.id
                   ? "red"
                   : getColor(location.density);
               let result = {

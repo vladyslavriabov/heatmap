@@ -1,5 +1,8 @@
 .App {
+  box-sizing: border-box;
   text-align: center;
   width: 100vw;
   height: 100vh;
+  padding: 50px;
+  padding-left: 0px;
 }
